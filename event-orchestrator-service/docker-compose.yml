@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  event-orchestrator:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongo:27017/nft_events
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ETHEREUM_WS_URL=${ETHEREUM_WS_URL}
+      - NFT_CONTRACT_ADDRESS=${NFT_CONTRACT_ADDRESS}
+      - MARKETPLACE_CONTRACT_ADDRESS=${MARKETPLACE_CONTRACT_ADDRESS}
+      - PRICE_PREDICTOR_URL=http://price-predictor:8001
+      - FRAUD_DETECTOR_URL=http://fraud-detector:8000
+      - TRUST_SCORE_URL=http://trust-score:4000
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+    networks:
+      - nft-ecosystem
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+    networks:
+      - nft-ecosystem
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - nft-ecosystem
+
+volumes:
+  mongo-data:
+  redis-data:
+
+networks:
+  nft-ecosystem:
+    driver: bridge

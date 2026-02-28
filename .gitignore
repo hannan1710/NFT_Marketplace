@@ -1,0 +1,144 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+*.env
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+artifacts/
+cache/
+typechain-types/
+
+# Hardhat
+coverage/
+coverage.json
+.coverage_artifacts/
+.coverage_cache/
+.coverage_contracts/
+
+# Testing
+.nyc_output/
+test-results/
+junit.xml
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Deployment
+deployments/localhost-*.json
+deployments/hardhat-*.json
+!deployments/.gitkeep
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.temp/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# MongoDB
+data/db/
+
+# Redis
+dump.rdb
+
+# Documentation (generated)
+docs/api/
+docs/coverage/
+
+# Secrets (NEVER commit these!)
+*.pem
+*.key
+*.cert
+secrets/
+private/
+
+# Contract flattened files
+flattened/
+
+# Gas reports
+gas-report.txt
+.gas-snapshot
+
+# Solidity
+*.abi
+*.bin
+
+# Frontend specific
+.next/
+.turbo/
+.vercel/
+.netlify/
+
+# Service specific
+trust-score-service/node_modules/
+event-orchestrator-service/node_modules/
+validator-service/node_modules/
+nft-fraud-detector/__pycache__/
+nft-price-predictor/__pycache__/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock

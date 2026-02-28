@@ -1,0 +1,52 @@
+{
+  "name": "nft-ecosystem",
+  "version": "1.0.0",
+  "description": "Production-grade NFT ecosystem with lazy minting and decentralized marketplace",
+  "scripts": {
+    "verify": "node verify-setup.js",
+    "start": "node scripts/start-all.js",
+    "install:all": "npm install && cd nft-marketplace-frontend && npm install && cd ../trust-score-service && npm install && cd ../event-orchestrator-service && npm install && cd ../validator-service && npm install && cd .. && echo All dependencies installed!",
+    "start:backend": "concurrently \"cd trust-score-service && npm start\" \"cd event-orchestrator-service && npm start\" \"cd nft-fraud-detector && python src/api/main.py\" \"cd nft-price-predictor && python src/api/main.py\"",
+    "compile": "hardhat compile",
+    "clean": "hardhat clean",
+    "test": "hardhat test",
+    "test:coverage": "hardhat coverage",
+    "test:gas": "REPORT_GAS=true hardhat test",
+    "test:gas:file": "REPORT_GAS=true GAS_REPORT_FILE=gas-report.txt hardhat test",
+    "test:parallel": "hardhat test --parallel",
+    "size": "CONTRACT_SIZER=true hardhat compile",
+    "node": "hardhat node",
+    "accounts": "hardhat accounts",
+    "deploy": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deployments/deploy-sepolia.js --network sepolia",
+    "deploy:mainnet": "hardhat run scripts/deployments/deploy-mainnet.js --network mainnet",
+    "deploy:polygon": "hardhat run scripts/deployments/deploy-polygon.js --network polygon",
+    "deploy:mumbai": "hardhat run scripts/deployments/deploy-mumbai.js --network mumbai",
+    "verify:sepolia": "hardhat run scripts/verification/verify-sepolia.js --network sepolia",
+    "verify:mainnet": "hardhat run scripts/verification/verify-mainnet.js --network mainnet",
+    "verify:polygon": "hardhat run scripts/verification/verify-polygon.js --network polygon",
+    "upgrade:sepolia": "hardhat run scripts/upgrades/upgrade-sepolia.js --network sepolia",
+    "upgrade:mainnet": "hardhat run scripts/upgrades/upgrade-mainnet.js --network mainnet",
+    "create-voucher": "hardhat run scripts/createVoucher.js",
+    "lazy-mint-example": "hardhat run scripts/lazyMintExample.js --network localhost",
+    "marketplace-example": "hardhat run scripts/marketplaceExample.js --network localhost",
+    "create-listings": "hardhat run scripts/createTestListings.js --network localhost",
+    "flatten": "hardhat flatten",
+    "check": "npm run compile && npm run test && npm run test:coverage"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@openzeppelin/hardhat-upgrades": "^3.0.0",
+    "hardhat": "^2.19.0",
+    "hardhat-gas-reporter": "^1.0.9",
+    "hardhat-contract-sizer": "^2.10.0",
+    "solidity-coverage": "^0.8.5",
+    "dotenv": "^16.3.1",
+    "chai": "^4.3.10"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^5.0.0"
+  }
+}

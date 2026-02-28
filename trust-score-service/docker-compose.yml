@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  trust-score-service:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - MONGODB_URI=mongodb://mongo:27017/trust_scores
+      - WEIGHT_TRANSACTIONS=0.25
+      - WEIGHT_DISPUTES=0.20
+      - WEIGHT_ACCOUNT_AGE=0.15
+      - WEIGHT_FRAUD_HISTORY=0.25
+      - WEIGHT_BEHAVIORAL=0.15
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    networks:
+      - trust-score-network
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+    networks:
+      - trust-score-network
+
+volumes:
+  mongo-data:
+
+networks:
+  trust-score-network:
+    driver: bridge
