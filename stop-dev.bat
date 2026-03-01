@@ -33,7 +33,12 @@ echo ========================================
 echo All Services Stopped!
 echo ========================================
 echo.
-echo This window will close automatically in 3 seconds...
-echo Press any key to close immediately.
-timeout /t 3 /nobreak >nul
+echo Closing in 2 seconds...
+timeout /t 2 /nobreak >nul
+
+REM Kill the parent PowerShell process if running from PowerShell
+taskkill /F /FI "WINDOWTITLE eq Administrator: Windows PowerShell" >nul 2>&1
+taskkill /F /FI "WINDOWTITLE eq Windows PowerShell" >nul 2>&1
+
+REM Exit the batch file
 exit

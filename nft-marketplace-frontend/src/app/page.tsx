@@ -120,10 +120,16 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div className="col-span-2 md:col-span-1">
-              <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary-400" />
-                <span>SecureNFT Hub</span>
-              </h3>
+              <div className="flex items-center space-x-2 mb-3 sm:mb-4">
+                <img 
+                  src="/logo-t.png" 
+                  alt="SecureNFT Hub Logo" 
+                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                />
+                <h3 className="text-base sm:text-lg font-bold">
+                  SecureNFT Hub
+                </h3>
+              </div>
               <p className="text-sm sm:text-base text-gray-400">
                 Secure, AI-powered NFT trading platform
               </p>

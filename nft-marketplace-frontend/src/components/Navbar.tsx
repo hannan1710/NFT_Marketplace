@@ -52,7 +52,7 @@ export function Navbar() {
                   className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-purple-600 dark:from-primary-400 dark:to-purple-400 bg-clip-text text-transparent">
+              <span className="text-xl font-bold text-primary-600 dark:text-primary-400">
                 SecureNFT Hub
               </span>
             </Link>

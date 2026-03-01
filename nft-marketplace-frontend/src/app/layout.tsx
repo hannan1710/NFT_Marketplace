@@ -6,9 +6,9 @@ import { Providers } from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'SecureNFT Hub - Secure & AI-Powered',
-  description: 'Production-grade NFT marketplace with fraud detection, price prediction, and trust scoring',
-  icons: {
+ title: 'SecureNFT Hub - Secure & AI-Powered NFT Marketplace',
+  description: 'SecureNFT Hub is an AI-powered secure NFT marketplace with smart contract validation, fraud detection, and dynamic trust scoring.',
+ icons: {
     icon: '/logo-t.png',
     shortcut: '/logo-t.png',
     apple: '/logo-t.png',

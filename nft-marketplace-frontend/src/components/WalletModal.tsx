@@ -95,9 +95,16 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
         <div className="card max-w-md w-full animate-slide-up">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Connect Wallet
-            </h2>
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/logo-t.png" 
+                alt="SecureNFT Hub" 
+                className="w-8 h-8 object-contain"
+              />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Connect Wallet
+              </h2>
+            </div>
             <button
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
