@@ -292,10 +292,6 @@ export default function CreateNFTPage() {
                 </>
               )}
             </button>
-
-            <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-              Note: Minting requires MINTER_ROLE. Gas fee is FREE test ETH on localhost.
-            </p>
           </form>
         )}
       </div>

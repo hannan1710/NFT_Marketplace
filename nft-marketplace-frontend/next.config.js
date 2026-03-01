@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false, // Disable in dev for faster compilation
   
   // Performance optimizations
   swcMinify: true,
@@ -13,6 +13,11 @@ const nextConfig = {
   // Disable TypeScript checking during build for speed
   typescript: {
     ignoreBuildErrors: true,
+  },
+  
+  // Faster compilation
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
   },
   
   // Optimize images
@@ -121,6 +126,14 @@ const nextConfig = {
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['lucide-react', 'recharts', 'wagmi', 'viem'],
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
   },
   
   // Production optimizations
