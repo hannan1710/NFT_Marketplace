@@ -15,11 +15,6 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
-  // Faster compilation
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
-  
   // Optimize images
   images: {
     remotePatterns: [
