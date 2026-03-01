@@ -91,9 +91,9 @@ class FraudDetectionEngine:
             try:
                 anomaly_score, is_anomaly = self.anomaly_detector.predict_anomaly_score(transaction)
                 results['anomaly_detection'] = {
-                    'is_anomaly': is_anomaly,
-                    'anomaly_score': anomaly_score,
-                    'confidence': 1.0 - anomaly_score  # Lower score = higher confidence of anomaly
+                    'is_anomaly': bool(is_anomaly),  # Convert numpy.bool_ to Python bool
+                    'anomaly_score': float(anomaly_score),  # Convert to Python float
+                    'confidence': float(1.0 - anomaly_score)  # Lower score = higher confidence of anomaly
                 }
                 if is_anomaly:
                     results['flags'].append('ANOMALY_DETECTED')

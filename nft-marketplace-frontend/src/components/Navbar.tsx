@@ -46,11 +46,14 @@ export function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2 group" onClick={closeMobileMenu}>
               <div className="relative">
-                <ShoppingBag className="w-8 h-8 text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform duration-300" />
-                <Sparkles className="w-4 h-4 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
+                <img 
+                  src="/logo-t.png" 
+                  alt="SecureNFT Hub Logo" 
+                  className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300"
+                />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-purple-600 dark:from-primary-400 dark:to-purple-400 bg-clip-text text-transparent">
-                NFT Marketplace
+                SecureNFT Hub
               </span>
             </Link>
 

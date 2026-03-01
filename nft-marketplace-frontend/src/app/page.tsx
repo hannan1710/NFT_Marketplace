@@ -122,7 +122,7 @@ export default function HomePage() {
             <div className="col-span-2 md:col-span-1">
               <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center space-x-2">
                 <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary-400" />
-                <span>NFT Marketplace</span>
+                <span>SecureNFT Hub</span>
               </h3>
               <p className="text-sm sm:text-base text-gray-400">
                 Secure, AI-powered NFT trading platform
@@ -151,7 +151,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-sm sm:text-base text-gray-400">
-            <p>&copy; 2024 NFT Marketplace. All rights reserved.</p>
+            <p>&copy; 2024 SecureNFT Hub. All rights reserved.</p>
           </div>
         </div>
       </footer>

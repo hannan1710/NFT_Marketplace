@@ -1,0 +1,133 @@
+version: '3.8'
+
+# Production override configuration
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  mongodb:
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    volumes:
+      - /var/lib/mongodb:/data/db
+      - /var/lib/mongodb-config:/data/configdb
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  redis:
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - /var/lib/redis:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  trust-score-service:
+    build:
+      args:
+        NODE_ENV: production
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+    volumes:
+      - ./trust-score-service/src:/app/src:ro
+      - ./trust-score-service/package.json:/app/package.json:ro
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  event-orchestrator:
+    build:
+      args:
+        NODE_ENV: production
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+    volumes:
+      - ./event-orchestrator-service/src:/app/src:ro
+      - ./event-orchestrator-service/package.json:/app/package.json:ro
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  validator-service:
+    build:
+      args:
+        NODE_ENV: production
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+    volumes:
+      - ./validator-service/src:/app/src:ro
+      - ./validator-service/package.json:/app/package.json:ro
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  fraud-detector:
+    environment:
+      LOG_LEVEL: INFO
+      WORKERS: 4
+    volumes:
+      - ./nft-fraud-detector/src:/app/src:ro
+      - /var/lib/fraud-models:/app/models
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+
+  price-predictor:
+    environment:
+      LOG_LEVEL: INFO
+      WORKERS: 4
+    volumes:
+      - ./nft-price-predictor/src:/app/src:ro
+      - /var/lib/price-models:/app/models
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+
+  nginx:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt:/etc/nginx/ssl:ro
+      - /var/log/nginx:/var/log/nginx
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M

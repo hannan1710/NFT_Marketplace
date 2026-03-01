@@ -1,44 +1,13 @@
-# Dependencies
-node_modules/
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-
-# Environment variables
+node_modules
 .env
-.env.local
-.env.*.local
-*.env
-
-# Build outputs
-dist/
-build/
-out/
-.next/
-artifacts/
-cache/
-typechain-types/
-
-# Hardhat
-coverage/
+coverage
 coverage.json
-.coverage_artifacts/
-.coverage_cache/
-.coverage_contracts/
+typechain
+typechain-types
 
-# Testing
-.nyc_output/
-test-results/
-junit.xml
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
+# Hardhat files
+cache
+artifacts
 
 # Python
 __pycache__/
@@ -49,15 +18,21 @@ __pycache__/
 env/
 venv/
 ENV/
-.venv
-pip-log.txt
-pip-delete-this-directory.txt
-.pytest_cache/
-.coverage
-htmlcov/
-*.egg-info/
-dist/
 build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
 # IDEs
 .vscode/
@@ -65,80 +40,46 @@ build/
 *.swp
 *.swo
 *~
-.DS_Store
-Thumbs.db
 
 # OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Desktop.ini
+Thumbs.db
 
-# Deployment
-deployments/localhost-*.json
-deployments/hardhat-*.json
-!deployments/.gitkeep
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Temporary files
-*.tmp
-*.temp
-.cache/
-.temp/
+# Docker
+docker/nginx/ssl/*.pem
+docker/nginx/ssl/*.key
+docker/nginx/ssl/*.crt
+docker/nginx/ssl/*.cert
+docker-compose.override.yml
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.docker.local
 
-# MongoDB
-data/db/
-
-# Redis
-dump.rdb
-
-# Documentation (generated)
-docs/api/
-docs/coverage/
-
-# Secrets (NEVER commit these!)
-*.pem
-*.key
-*.cert
-secrets/
-private/
-
-# Contract flattened files
-flattened/
-
-# Gas reports
+# Deployment files
+deployment-*.json
 gas-report.txt
-.gas-snapshot
 
-# Solidity
-*.abi
-*.bin
+# Test coverage
+.nyc_output/
+htmlcov/
+.pytest_cache/
 
-# Frontend specific
-.next/
-.turbo/
-.vercel/
-.netlify/
-
-# Service specific
-trust-score-service/node_modules/
-event-orchestrator-service/node_modules/
-validator-service/node_modules/
-nft-fraud-detector/__pycache__/
-nft-price-predictor/__pycache__/
+# Models
+nft-fraud-detector/models/*.pkl
+nft-fraud-detector/models/*.joblib
+nft-price-predictor/models/*.pkl
+nft-price-predictor/models/*.joblib
 
 # Backup files
-*.bak
 *.backup
-*~
-
-# Lock files (optional - uncomment if you want to ignore)
-# package-lock.json
-# yarn.lock
+*.bak

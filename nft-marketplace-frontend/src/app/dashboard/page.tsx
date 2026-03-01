@@ -130,6 +130,7 @@ export default function DashboardPage() {
             title="Your NFTs"
             value={dashboardStats.ownedNFTs.toString()}
             change={`${eventCount} new events`}
+            link="/my-nfts"
           />
           <StatCard
             icon={<DollarSign className="w-6 h-6 text-success-600" />}
@@ -319,8 +320,8 @@ export default function DashboardPage() {
   );
 }
 
-function StatCard({ icon, title, value, change }: { icon: React.ReactNode; title: string; value: string; change: string }) {
-  return (
+function StatCard({ icon, title, value, change, link }: { icon: React.ReactNode; title: string; value: string; change: string; link?: string }) {
+  const content = (
     <div className="card">
       <div className="flex items-center justify-between mb-4">
         <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">{icon}</div>
@@ -330,4 +331,14 @@ function StatCard({ icon, title, value, change }: { icon: React.ReactNode; title
       <p className="text-xs text-gray-500 dark:text-gray-500">{change}</p>
     </div>
   );
+
+  if (link) {
+    return (
+      <a href={link} className="block hover:scale-105 transition-transform cursor-pointer">
+        {content}
+      </a>
+    );
+  }
+
+  return content;
 }

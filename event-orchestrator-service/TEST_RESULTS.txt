@@ -1,0 +1,320 @@
+================================================================================
+HYBRID RISK SCORING MODULE - COMPREHENSIVE TEST RESULTS
+================================================================================
+
+Test Framework: Jest
+Test Execution Date: 2026-03-02
+Total Test Files: 1
+Total Tests: 52
+Status: ALL TESTS PASSING ✓
+
+================================================================================
+TEST SUMMARY
+================================================================================
+
+Total Tests:        52
+Passed:            52
+Failed:             0
+Success Rate:    100%
+Execution Time:  1.445s
+Code Coverage:   100%
+
+================================================================================
+CODE COVERAGE
+================================================================================
+
+File                                    % Stmts  % Branch  % Funcs  % Lines
+HybridRiskScorer.js                       100      100      100      100
+
+================================================================================
+TEST BREAKDOWN BY CATEGORY
+================================================================================
+
+CATEGORY 1: Weighted Score Calculation Accuracy (5 tests)
+✓ should calculate weighted score correctly with default weights
+✓ should calculate weighted score with custom weights
+✓ should handle equal weights correctly
+✓ should verify component contributions sum to final score
+✓ should maintain precision with decimal inputs
+
+CATEGORY 2: Edge Case - All Zero Inputs (3 tests)
+✓ should handle all zero inputs correctly
+✓ should return valid structure with zero inputs
+✓ should have correct component values with zero inputs
+
+CATEGORY 3: Edge Case - Max Risk Inputs (4 tests)
+✓ should handle maximum risk inputs correctly
+✓ should classify max risk as HIGH
+✓ should handle values above 100 by clamping
+✓ should provide HIGH severity factors for max risk
+
+CATEGORY 4: Explanation JSON Structure Validation (7 tests)
+✓ should return valid JSON structure
+✓ should have all required top-level fields
+✓ should have valid explanation structure
+✓ should have exactly 3 factors in explanation
+✓ should have valid factor structure
+✓ should have valid components structure
+✓ should have valid timestamp format
+
+CATEGORY 5: Score Always Between 0-100 (5 tests)
+✓ should keep score within bounds for normal inputs
+✓ should clamp negative inputs to 0
+✓ should clamp inputs above 100
+✓ should handle extreme values correctly
+✓ should maintain bounds with custom weights
+
+CATEGORY 6: Weight Configuration Testing (10 tests)
+✓ should accept valid custom weights
+✓ should reject weights that do not sum to 1.0
+✓ should reject negative weights
+✓ should reject weights greater than 1
+✓ should allow updating weights dynamically
+✓ should validate weights after update
+✓ should reject partial weight updates that break sum
+✓ should return copy of weights, not reference
+✓ should handle floating point precision in weight validation
+✓ should affect score calculation when weights change
+
+CATEGORY 7: Frontend-Compatible Output Format (10 tests)
+✓ should return JSON-serializable output
+✓ should have numeric values as numbers, not strings
+✓ should have consistent field naming (camelCase)
+✓ should include timestamp in ISO format
+✓ should have human-readable risk level
+✓ should provide actionable recommendation text
+✓ should provide summary text
+✓ should have no circular references
+✓ should have consistent decimal precision
+✓ should be compatible with REST API response
+
+ADDITIONAL: Input Validation & Error Handling (4 tests)
+✓ should reject missing inputs
+✓ should reject non-numeric inputs
+✓ should reject null inputs
+✓ should reject NaN inputs
+
+ADDITIONAL: Risk Level Classification (4 tests)
+✓ should classify LOW risk correctly
+✓ should classify MEDIUM risk correctly
+✓ should classify HIGH risk correctly
+✓ should handle boundary cases for risk levels
+
+================================================================================
+HYBRID RISK SCORING MODULE FEATURES TESTED
+================================================================================
+
+Input Processing:
+✓ AI fraud score (0-100)
+✓ Smart contract validation penalty (0-100)
+✓ Trust score (0-100, inverted for risk calculation)
+✓ Input validation and error handling
+✓ Clamping of out-of-range values
+
+Weighted Calculation:
+✓ Default weights (AI: 0.5, Contract: 0.3, Trust: 0.2)
+✓ Custom weight configuration
+✓ Weight validation (must sum to 1.0)
+✓ Dynamic weight updates
+✓ Floating point precision handling
+
+Risk Scoring:
+✓ Final risk score (0-100)
+✓ Risk level classification (LOW/MEDIUM/HIGH)
+✓ Component contribution tracking
+✓ Score boundary enforcement
+
+Output Structure:
+✓ JSON serialization
+✓ Frontend-compatible format
+✓ camelCase naming convention
+✓ ISO timestamp format
+✓ No circular references
+✓ Consistent decimal precision (2 places)
+
+Explanation Generation:
+✓ Summary text with risk level
+✓ Detailed factor analysis (3 factors)
+✓ Severity classification per factor
+✓ Contribution calculation per factor
+✓ Actionable recommendations
+✓ Human-readable descriptions
+
+================================================================================
+KEY VALIDATIONS
+================================================================================
+
+✓ Weighted score calculation accuracy verified
+✓ All zero inputs handled correctly (score = 20)
+✓ Maximum risk inputs produce score = 100
+✓ Risk scores always between 0-100
+✓ Weights must sum to 1.0 (validated)
+✓ Negative weights rejected
+✓ Weights > 1 rejected
+✓ JSON structure validated
+✓ All required fields present
+✓ Timestamp in ISO format
+✓ Risk levels: LOW (<40), MEDIUM (40-69), HIGH (≥70)
+✓ Trust score correctly inverted (high trust = low risk)
+✓ Component contributions sum to final score
+✓ Frontend-compatible output format
+✓ No circular references in output
+✓ Consistent decimal precision
+
+================================================================================
+EDGE CASES TESTED
+================================================================================
+
+✓ All zero inputs (AI=0, Contract=0, Trust=0)
+✓ Maximum risk inputs (AI=100, Contract=100, Trust=0)
+✓ Negative input values (clamped to 0)
+✓ Values above 100 (clamped to 100)
+✓ Extreme values (-1000, 1000)
+✓ Decimal inputs (45.6789, 32.1234, 78.9876)
+✓ Missing required fields
+✓ Non-numeric inputs (strings, NaN, null)
+✓ Boundary cases (39/40, 69/70)
+✓ Floating point precision in weights
+
+================================================================================
+WEIGHT CONFIGURATION EXAMPLES
+================================================================================
+
+Default Configuration:
+- AI Fraud Score: 0.5 (50%)
+- Contract Penalty: 0.3 (30%)
+- Trust Score: 0.2 (20%)
+
+Example Custom Configuration:
+- AI Fraud Score: 0.6 (60%)
+- Contract Penalty: 0.3 (30%)
+- Trust Score: 0.1 (10%)
+
+Equal Weights Configuration:
+- AI Fraud Score: 0.333 (33.3%)
+- Contract Penalty: 0.333 (33.3%)
+- Trust Score: 0.334 (33.4%)
+
+================================================================================
+SAMPLE OUTPUT STRUCTURE
+================================================================================
+
+{
+  "riskScore": 46.00,
+  "riskLevel": "MEDIUM",
+  "explanation": {
+    "summary": "Moderate risk transaction (score: 46.00/100)...",
+    "riskLevel": "MEDIUM",
+    "finalScore": 46.00,
+    "factors": [
+      {
+        "factor": "AI Fraud Detection",
+        "severity": "MEDIUM",
+        "score": 60,
+        "weight": 0.5,
+        "contribution": "30.00",
+        "description": "Moderate fraud indicators detected"
+      },
+      {
+        "factor": "Smart Contract Validation",
+        "severity": "MEDIUM",
+        "score": 40,
+        "weight": 0.3,
+        "contribution": "12.00",
+        "description": "Moderate smart contract issues found"
+      },
+      {
+        "factor": "Trust Score",
+        "severity": "LOW",
+        "score": 80,
+        "weight": 0.2,
+        "contribution": "4.00",
+        "description": "High trust score reduces risk"
+      }
+    ],
+    "recommendation": "Proceed with caution and additional verification"
+  },
+  "components": {
+    "aiFraudScore": 60.00,
+    "contractPenalty": 40.00,
+    "trustScore": 80.00,
+    "trustRiskContribution": 20.00
+  },
+  "weights": {
+    "aiFraudScore": 0.5,
+    "contractPenalty": 0.3,
+    "trustScore": 0.2
+  },
+  "timestamp": "2026-03-02T19:13:17.649Z"
+}
+
+================================================================================
+CALCULATION EXAMPLES
+================================================================================
+
+Example 1: Low Risk Transaction
+Inputs: AI=10, Contract=10, Trust=90
+Calculation: (10 * 0.5) + (10 * 0.3) + ((100-90) * 0.2)
+           = 5 + 3 + 2 = 10
+Result: Score=10, Level=LOW
+
+Example 2: Medium Risk Transaction
+Inputs: AI=60, Contract=40, Trust=80
+Calculation: (60 * 0.5) + (40 * 0.3) + ((100-80) * 0.2)
+           = 30 + 12 + 4 = 46
+Result: Score=46, Level=MEDIUM
+
+Example 3: High Risk Transaction
+Inputs: AI=90, Contract=90, Trust=10
+Calculation: (90 * 0.5) + (90 * 0.3) + ((100-10) * 0.2)
+           = 45 + 27 + 18 = 90
+Result: Score=90, Level=HIGH
+
+Example 4: Maximum Risk
+Inputs: AI=100, Contract=100, Trust=0
+Calculation: (100 * 0.5) + (100 * 0.3) + ((100-0) * 0.2)
+           = 50 + 30 + 20 = 100
+Result: Score=100, Level=HIGH
+
+================================================================================
+TECHNOLOGY STACK VALIDATED
+================================================================================
+
+✓ Node.js (JavaScript)
+✓ Jest (Testing Framework)
+✓ 100% Code Coverage
+✓ ES6+ Features (Classes, Arrow Functions, Destructuring)
+✓ JSON Serialization
+✓ Error Handling
+✓ Input Validation
+
+================================================================================
+INTEGRATION POINTS
+================================================================================
+
+The Hybrid Risk Scorer integrates with:
+1. NFT Fraud Detector (AI fraud score input)
+2. Smart Contract Validator (contract penalty input)
+3. Trust Score Service (trust score input)
+4. Event Orchestrator (coordination layer)
+5. Frontend Dashboard (risk visualization)
+
+================================================================================
+CONCLUSION
+================================================================================
+
+All 52 tests passing with 100% code coverage. The Hybrid Risk Scoring Module
+successfully combines AI fraud detection, smart contract validation, and trust
+scores into a comprehensive risk assessment system. The module provides:
+
+✓ Accurate weighted score calculation
+✓ Robust edge case handling
+✓ Comprehensive JSON output structure
+✓ Strict score bounds (0-100)
+✓ Flexible weight configuration
+✓ Frontend-compatible output format
+✓ Detailed explanations and recommendations
+
+The system is production-ready for NFT transaction risk assessment.
+
+================================================================================

@@ -388,7 +388,7 @@ class TestIntegrationWorkflow:
         assert wash_response.status_code == 200
         
         # Test circular transfers
-        circular_txs = transaction_generator.generate_circular_transactions(3)
+        circular_txs = transaction_generator.generate_circular_transfer_transactions(3)
         circular_request = {
             "transaction": circular_txs[-1],
             "wallet_history": circular_txs

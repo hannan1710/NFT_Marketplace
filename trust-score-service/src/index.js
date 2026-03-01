@@ -90,8 +90,8 @@ const startBlockchainListener = () => {
   
   try {
     // Load contract ABIs
-    const nftAbi = require('./abis/NFTContract.json');
-    const marketplaceAbi = require('./abis/NFTMarketplace.json');
+    const nftAbi = require('./abis/NFTContract.json').abi;
+    const marketplaceAbi = require('./abis/NFTMarketplace.json').abi;
     
     blockchainListener = new BlockchainListener({
       rpcUrl: process.env.ETHEREUM_RPC_URL,

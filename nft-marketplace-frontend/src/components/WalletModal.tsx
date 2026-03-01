@@ -1,8 +1,15 @@
 'use client';
 
-import { useConnect } from 'wagmi';
+import { useConnect, useAccount } from 'wagmi';
 import { X } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+// Extend Window interface for ethereum
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -10,7 +17,9 @@ interface WalletModalProps {
 }
 
 export function WalletModal({ isOpen, onClose }: WalletModalProps) {
-  const { connectors, connect } = useConnect();
+  const { connectors, connect, error, isPending } = useConnect();
+  const { isConnected } = useAccount();
+  const [localError, setLocalError] = useState<string | null>(null);
 
   // Filter out duplicate connectors by name
   const uniqueConnectors = connectors.reduce((acc, connector) => {
@@ -24,6 +33,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      setLocalError(null);
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -32,11 +42,32 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     };
   }, [isOpen]);
 
+  // Close modal when successfully connected
+  useEffect(() => {
+    if (isConnected && isOpen) {
+      onClose();
+    }
+  }, [isConnected, isOpen, onClose]);
+
   if (!isOpen) return null;
 
-  const handleConnect = (connector: any) => {
-    connect({ connector });
-    onClose();
+  const handleConnect = async (connector: any) => {
+    try {
+      setLocalError(null);
+      
+      // Check if MetaMask is installed for injected connector
+      if (connector.name === 'MetaMask' && typeof window !== 'undefined') {
+        if (!window.ethereum) {
+          setLocalError('MetaMask is not installed. Please install MetaMask extension from metamask.io');
+          return;
+        }
+      }
+
+      await connect({ connector });
+    } catch (err: any) {
+      console.error('Failed to connect wallet:', err);
+      setLocalError(err?.message || 'Failed to connect wallet. Please try again.');
+    }
   };
 
   const getWalletIcon = (name: string) => {
@@ -78,8 +109,27 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
 
           {/* Description */}
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Choose your preferred wallet to connect to the NFT marketplace
+            Choose your preferred wallet to connect to SecureNFT Hub
           </p>
+
+          {/* Error Display */}
+          {(error || localError) && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {localError || error?.message || 'Failed to connect wallet'}
+              </p>
+              {localError?.includes('not installed') && (
+                <a
+                  href="https://metamask.io/download/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-red-500 dark:text-red-300 underline hover:text-red-700 dark:hover:text-red-100 mt-1 inline-block"
+                >
+                  Download MetaMask →
+                </a>
+              )}
+            </div>
+          )}
 
           {/* Wallet Options */}
           <div className="space-y-3">
@@ -87,7 +137,8 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
               <button
                 key={connector.id}
                 onClick={() => handleConnect(connector)}
-                className="w-full flex items-center space-x-4 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-300 group"
+                disabled={isPending}
+                className="w-full flex items-center space-x-4 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="text-3xl">{getWalletIcon(connector.name)}</span>
                 <div className="flex-1 text-left">

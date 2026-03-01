@@ -19,7 +19,35 @@ export default function CreateNFTPage() {
   const [uploading, setUploading] = useState(false);
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ 
+    hash,
+    onSuccess: async (data) => {
+      // Get the token ID from the Transfer event
+      const transferEvent = data.logs.find((log: any) => 
+        log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+      );
+      
+      if (transferEvent) {
+        // Token ID is the last topic
+        const tokenId = parseInt(transferEvent.topics[3], 16);
+        
+        // Store metadata
+        try {
+          await fetch(`/api/metadata/${tokenId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: formData.name,
+              description: formData.description,
+              image: formData.image,
+            }),
+          });
+        } catch (err) {
+          console.error('Failed to store metadata:', err);
+        }
+      }
+    }
+  });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -160,10 +188,11 @@ export default function CreateNFTPage() {
             {/* NFT Details */}
             <div className="card space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <label htmlFor="nft-name" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                   Name *
                 </label>
                 <input
+                  id="nft-name"
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
@@ -174,10 +203,11 @@ export default function CreateNFTPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                <label htmlFor="nft-description" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                   Description *
                 </label>
                 <textarea
+                  id="nft-description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Describe your NFT..."
@@ -189,10 +219,11 @@ export default function CreateNFTPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  <label htmlFor="nft-price" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                     Price (ETH)
                   </label>
                   <input
+                    id="nft-price"
                     type="number"
                     step="0.001"
                     value={formData.price}
@@ -206,10 +237,11 @@ export default function CreateNFTPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  <label htmlFor="nft-royalty" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                     Royalty (%)
                   </label>
                   <input
+                    id="nft-royalty"
                     type="number"
                     min="0"
                     max="10"

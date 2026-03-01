@@ -6,8 +6,13 @@ import { Providers } from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'NFT Marketplace - Secure & AI-Powered',
+  title: 'SecureNFT Hub - Secure & AI-Powered',
   description: 'Production-grade NFT marketplace with fraud detection, price prediction, and trust scoring',
+  icons: {
+    icon: '/logo-t.png',
+    shortcut: '/logo-t.png',
+    apple: '/logo-t.png',
+  },
 };
 
 export default function RootLayout({

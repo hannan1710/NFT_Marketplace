@@ -28,15 +28,19 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200,
+        runs: 1, // Reduce runs for smaller bytecode
       },
-      viaIR: true, // Enable IR-based code generation for better optimization
+      viaIR: false, // Disable IR for faster compilation
     },
   },
   
   networks: {
     hardhat: {
       chainId: 31337,
+      blockGasLimit: 30000000, // Increase block gas limit
+      gas: "auto", // Auto calculate gas
+      gasPrice: "auto",
+      allowUnlimitedContractSize: true, // Allow large contracts
       forking: process.env.FORK_MAINNET === "true" ? {
         url: process.env.MAINNET_RPC_URL || "",
         blockNumber: parseInt(process.env.FORK_BLOCK_NUMBER || "0") || undefined,
@@ -50,12 +54,15 @@ module.exports = {
     localhost: {
       url: "http://127.0.0.1:8545",
       chainId: 31337,
+      gas: "auto",
+      gasPrice: "auto",
+      allowUnlimitedContractSize: true,
     },
     
     // Ethereum Mainnet
     mainnet: {
       url: process.env.MAINNET_RPC_URL || "",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY && process.env.PRIVATE_KEY.length === 66 ? [process.env.PRIVATE_KEY] : [],
       chainId: 1,
       gasPrice: "auto",
       timeout: 60000,
@@ -64,7 +71,7 @@ module.exports = {
     // Ethereum Sepolia Testnet
     sepolia: {
       url: process.env.SEPOLIA_RPC_URL || "",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY && process.env.PRIVATE_KEY.length === 66 ? [process.env.PRIVATE_KEY] : [],
       chainId: 11155111,
       gasPrice: "auto",
       timeout: 60000,
@@ -73,7 +80,7 @@ module.exports = {
     // Ethereum Goerli Testnet (deprecated but still useful)
     goerli: {
       url: process.env.GOERLI_RPC_URL || "",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY && process.env.PRIVATE_KEY.length === 66 ? [process.env.PRIVATE_KEY] : [],
       chainId: 5,
       gasPrice: "auto",
       timeout: 60000,
@@ -82,7 +89,7 @@ module.exports = {
     // Polygon Mainnet
     polygon: {
       url: process.env.POLYGON_RPC_URL || "https://polygon-rpc.com",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY && process.env.PRIVATE_KEY.length === 66 ? [process.env.PRIVATE_KEY] : [],
       chainId: 137,
       gasPrice: "auto",
       timeout: 60000,
@@ -91,7 +98,7 @@ module.exports = {
     // Polygon Mumbai Testnet
     mumbai: {
       url: process.env.MUMBAI_RPC_URL || "https://rpc-mumbai.maticvigil.com",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY && process.env.PRIVATE_KEY.length === 66 ? [process.env.PRIVATE_KEY] : [],
       chainId: 80001,
       gasPrice: "auto",
       timeout: 60000,
@@ -100,7 +107,7 @@ module.exports = {
     // Arbitrum One
     arbitrum: {
       url: process.env.ARBITRUM_RPC_URL || "https://arb1.arbitrum.io/rpc",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY && process.env.PRIVATE_KEY.length === 66 ? [process.env.PRIVATE_KEY] : [],
       chainId: 42161,
       gasPrice: "auto",
       timeout: 60000,
@@ -109,7 +116,7 @@ module.exports = {
     // Optimism
     optimism: {
       url: process.env.OPTIMISM_RPC_URL || "https://mainnet.optimism.io",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY && process.env.PRIVATE_KEY.length === 66 ? [process.env.PRIVATE_KEY] : [],
       chainId: 10,
       gasPrice: "auto",
       timeout: 60000,
@@ -118,7 +125,7 @@ module.exports = {
     // Base
     base: {
       url: process.env.BASE_RPC_URL || "https://mainnet.base.org",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY && process.env.PRIVATE_KEY.length === 66 ? [process.env.PRIVATE_KEY] : [],
       chainId: 8453,
       gasPrice: "auto",
       timeout: 60000,

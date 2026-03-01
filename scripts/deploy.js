@@ -30,6 +30,7 @@ async function main() {
     {
       initializer: "initialize",
       kind: "uups",
+      txOverrides: { gasLimit: 15000000 }, // Set explicit gas limit
     }
   );
 
@@ -83,10 +84,10 @@ async function main() {
     const DEFAULT_ADMIN_ROLE = await nftContract.DEFAULT_ADMIN_ROLE();
     const MINTER_ROLE = await nftContract.MINTER_ROLE();
     
-    const tx1 = await nftContract.grantRole(DEFAULT_ADMIN_ROLE, autoAdminAddress);
+    const tx1 = await nftContract.grantRole(DEFAULT_ADMIN_ROLE, autoAdminAddress, { gasLimit: 15000000 });
     await tx1.wait();
     
-    const tx2 = await nftContract.grantRole(MINTER_ROLE, autoAdminAddress);
+    const tx2 = await nftContract.grantRole(MINTER_ROLE, autoAdminAddress, { gasLimit: 15000000 });
     await tx2.wait();
     
     console.log(`✅ Admin role granted to: ${autoAdminAddress}`);

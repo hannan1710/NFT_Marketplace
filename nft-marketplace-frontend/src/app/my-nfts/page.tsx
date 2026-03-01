@@ -31,7 +31,17 @@ export default function MyNFTsPage() {
 
   useEffect(() => {
     const fetchNFTs = async () => {
-      if (!address || !totalSupply) return;
+      if (!address) {
+        setLoading(false);
+        return;
+      }
+
+      // If totalSupply is 0 or undefined, no NFTs exist yet
+      if (!totalSupply || totalSupply === 0n) {
+        setNfts([]);
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       const userNFTs = [];
@@ -86,7 +96,6 @@ export default function MyNFTsPage() {
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
-            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading your NFTs...</span>
           </div>
         ) : nfts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

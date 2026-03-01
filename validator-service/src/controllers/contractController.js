@@ -31,7 +31,7 @@ exports.analyzeContract = async (req, res, next) => {
     res.json({
       success: true,
       data: {
-        contractAddress: contractName || 'UserContract',
+        contractName: contractName || 'UserContract',
         vulnerabilities: report.vulnerabilities.map(v => ({
           type: v.type,
           severity: v.severity.charAt(0) + v.severity.slice(1).toLowerCase(), // HIGH -> High

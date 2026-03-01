@@ -29,6 +29,53 @@ A production-grade NFT marketplace with AI-powered fraud detection, price predic
 
 ## 🚀 Quick Start
 
+### One-Command Setup
+
+**Windows:**
+```bash
+start-dev.bat
+```
+
+This automatically:
+- Starts MongoDB & Hardhat blockchain
+- Deploys contracts
+- Updates frontend config
+- Funds your wallet with test ETH
+- Grants MINTER_ROLE
+- Starts all 5 backend services
+- Starts frontend
+
+**Stop all services:**
+```bash
+stop-dev.bat
+```
+
+### Access
+
+- **Frontend**: http://localhost:3000
+- **Hardhat Node**: http://localhost:8545
+
+### First Time Setup
+
+1. **Install MongoDB** (if not installed):
+   ```bash
+   winget install MongoDB.Server
+   ```
+
+2. **Configure MetaMask**:
+   - Network: Localhost 8545
+   - RPC: http://127.0.0.1:8545
+   - Chain ID: 31337
+
+3. **Check Setup** (if you get MetaMask errors):
+   ```bash
+   npx hardhat run scripts/checkSetup.js --network localhost
+   ```
+
+📖 **Full Guide**: See [START_GUIDE.md](START_GUIDE.md) for detailed instructions.
+
+## 📁 Project Structure
+
 ### Prerequisites
 
 - Node.js v18+ and npm
@@ -36,34 +83,36 @@ A production-grade NFT marketplace with AI-powered fraud detection, price predic
 - Git
 - MetaMask browser extension
 
-### Setup Steps
+### Two Ways to Start
 
+#### Option 1: Automated (Recommended for Quick Testing)
 ```bash
-# 1. Clone the repository
+# 1. Clone and install
 git clone https://github.com/hannan1710/NFT_Marketplace.git
 cd NFT_Marketplace
-
-# 2. Verify your setup
-npm run verify
-
-# 3. Install all dependencies
 npm run install:all
 
-# 4. Start everything (blockchain + backend + frontend)
+# 2. Start everything
 npm start
 
-# 5. Wait 10 seconds, then deploy contracts (in a new terminal)
+# 3. Deploy contracts (in new terminal)
 npm run deploy
-
-# 6. Grant roles to your wallet
 npx hardhat run scripts/grantAllRoles.js --network localhost
 
-# 7. Open http://localhost:3000 and connect MetaMask
+# 4. Open http://localhost:3000
 ```
 
-That's it! Your NFT Marketplace is now running locally.
+#### Option 2: Manual (Recommended for Development)
+**See the complete step-by-step guide:** [HOW_TO_RUN_COMPLETE_PROJECT.md](./HOW_TO_RUN_COMPLETE_PROJECT.md)
 
-**Need more details?** See the complete [SETUP_GUIDE.md](./SETUP_GUIDE.md) for troubleshooting and manual setup instructions.
+This guide shows you:
+- How to start each service individually
+- How to see AI features in action
+- How to test all functionality
+- Troubleshooting for each component
+
+### Quick Reference
+For quick commands and URLs, see: [QUICK_REFERENCE.md](./QUICK_REFERENCE.md)
 
 ### Manual Setup
 
@@ -338,6 +387,20 @@ npm run build
 
 ## 📚 Documentation
 
+### Getting Started
+- **[HOW TO RUN COMPLETE PROJECT](./HOW_TO_RUN_COMPLETE_PROJECT.md)** ⭐ - Complete step-by-step guide with all AI features
+- **[MINT NFT GUIDE](./MINT_NFT_GUIDE.md)** 🎨 - Simple guide to mint NFTs (solves MetaMask issue)
+- **[MetaMask Review Alert Fix](./METAMASK_REVIEW_ALERT_FIX.md)** 🔧 - Complete solution for MetaMask localhost bug
+- [Quick Reference Card](./QUICK_REFERENCE.md) - Commands and URLs at a glance
+- [Quick Start Guide](./QUICK_START_README.md) - Get running in 5 minutes
+- [Complete Setup Guide](./SETUP_GUIDE.md) - Detailed setup with troubleshooting
+- [Pre-Push Checklist](./PRE_PUSH_CHECKLIST.md) - Verify before pushing to GitHub
+
+### Architecture & Integration
+- [System Architecture](./ARCHITECTURE.md) - How everything works together
+- [Backend Integration Guide](./BACKEND_INTEGRATION_GUIDE.md) - Where AI services are used
+
+### Component Documentation
 - [Smart Contracts](./contracts/README.md)
 - [Frontend Setup](./nft-marketplace-frontend/README.md)
 - [Trust Score Service](./trust-score-service/README.md)
@@ -345,7 +408,67 @@ npm run build
 - [Fraud Detector](./nft-fraud-detector/README.md)
 - [Price Predictor](./nft-price-predictor/README.md)
 
-## 🚢 Deployment
+## 🐳 Docker Deployment
+
+### Quick Start with Docker
+
+**All services in containers with one command:**
+
+```bash
+# Windows
+docker-start.bat dev
+
+# Linux/Mac
+./docker-start.sh dev
+```
+
+This starts:
+- MongoDB database
+- Redis cache
+- All Node.js backend services
+- All Python AI services
+- Nginx reverse proxy
+
+**Production deployment:**
+```bash
+# Windows
+docker-start.bat prod
+
+# Linux/Mac
+./docker-start.sh prod
+```
+
+### Docker Documentation
+
+- **[Docker Setup Summary](./DOCKER_SETUP_SUMMARY.md)** ⭐ - Quick overview and getting started
+- **[Docker Guide](./DOCKER_GUIDE.md)** 📖 - Complete deployment guide
+- **[Docker Quick Reference](./DOCKER_QUICK_REFERENCE.md)** 🚀 - Command cheat sheet
+- **[Docker Security Checklist](./DOCKER_SECURITY_CHECKLIST.md)** 🔐 - Security best practices
+- **[Docker Files Index](./DOCKER_FILES_INDEX.md)** 📋 - Complete file reference
+
+### Docker Features
+
+✅ Multi-stage builds for optimized images  
+✅ Non-root users for security  
+✅ Health checks for all services  
+✅ Nginx reverse proxy with SSL support  
+✅ Rate limiting and load balancing  
+✅ MongoDB with automatic initialization  
+✅ Redis for caching and job queues  
+✅ Production-ready with resource limits  
+✅ Easy scaling with replicas  
+
+### Verify Docker Setup
+
+```bash
+# Windows
+docker-verify.bat
+
+# Linux/Mac
+./docker-verify.sh
+```
+
+## 🚢 Blockchain Deployment
 
 ### Testnet (Sepolia)
 

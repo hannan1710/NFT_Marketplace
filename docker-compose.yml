@@ -1,0 +1,227 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: nft-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-changeme}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-nft_marketplace}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - ./docker/mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - nft-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and queues
+  redis:
+    image: redis:7-alpine
+    container_name: nft-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-changeme}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - nft-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Trust Score Service (Node.js)
+  trust-score-service:
+    build:
+      context: ./trust-score-service
+      dockerfile: ../docker/Dockerfile.node
+    container_name: nft-trust-score
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3001
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/${MONGO_DB:-nft_marketplace}?authSource=admin
+      RPC_URL: ${SEPOLIA_RPC_URL}
+      NFT_CONTRACT_ADDRESS: ${NFT_CONTRACT_ADDRESS_SEPOLIA}
+      MARKETPLACE_CONTRACT_ADDRESS: ${MARKETPLACE_CONTRACT_ADDRESS_SEPOLIA}
+    ports:
+      - "3001:3001"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - nft-network
+    volumes:
+      - ./trust-score-service:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Event Orchestrator Service (Node.js)
+  event-orchestrator:
+    build:
+      context: ./event-orchestrator-service
+      dockerfile: ../docker/Dockerfile.node
+    container_name: nft-event-orchestrator
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3002
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/${MONGO_DB:-nft_marketplace}?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379
+      RPC_URL: ${SEPOLIA_RPC_URL}
+      NFT_CONTRACT_ADDRESS: ${NFT_CONTRACT_ADDRESS_SEPOLIA}
+      MARKETPLACE_CONTRACT_ADDRESS: ${MARKETPLACE_CONTRACT_ADDRESS_SEPOLIA}
+      TRUST_SCORE_SERVICE_URL: http://trust-score-service:3001
+      FRAUD_DETECTOR_URL: http://fraud-detector:8001
+      PRICE_PREDICTOR_URL: http://price-predictor:8002
+    ports:
+      - "3002:3002"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      trust-score-service:
+        condition: service_healthy
+    networks:
+      - nft-network
+    volumes:
+      - ./event-orchestrator-service:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Validator Service (Node.js)
+  validator-service:
+    build:
+      context: ./validator-service
+      dockerfile: ../docker/Dockerfile.node
+    container_name: nft-validator
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3003
+    ports:
+      - "3003:3003"
+    networks:
+      - nft-network
+    volumes:
+      - ./validator-service:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # NFT Fraud Detector (Python/FastAPI)
+  fraud-detector:
+    build:
+      context: ./nft-fraud-detector
+      dockerfile: ../docker/Dockerfile.python
+    container_name: nft-fraud-detector
+    restart: unless-stopped
+    environment:
+      PYTHONUNBUFFERED: 1
+      PORT: 8001
+      MODEL_PATH: /app/models
+    ports:
+      - "8001:8001"
+    networks:
+      - nft-network
+    volumes:
+      - ./nft-fraud-detector:/app
+      - fraud_models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # NFT Price Predictor (Python/FastAPI)
+  price-predictor:
+    build:
+      context: ./nft-price-predictor
+      dockerfile: ../docker/Dockerfile.python
+    container_name: nft-price-predictor
+    restart: unless-stopped
+    environment:
+      PYTHONUNBUFFERED: 1
+      PORT: 8002
+      MODEL_PATH: /app/models
+    ports:
+      - "8002:8002"
+    networks:
+      - nft-network
+    volumes:
+      - ./nft-price-predictor:/app
+      - price_models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: nft-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - trust-score-service
+      - event-orchestrator
+      - validator-service
+      - fraud-detector
+      - price-predictor
+    networks:
+      - nft-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  nft-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+  redis_data:
+    driver: local
+  fraud_models:
+    driver: local
+  price_models:
+    driver: local
+  nginx_logs:
+    driver: local

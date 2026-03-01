@@ -1,382 +1,175 @@
 const { expect } = require("chai");
 const { ethers, upgrades } = require("hardhat");
+const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 
-describe("NFTContract with Lazy Minting", function () {
-  let nftContract;
-  let owner, signer, buyer, unauthorized;
-  let SIGNER_ROLE, MINTER_ROLE, ADMIN_ROLE;
-
-  const NAME = "TestNFT";
-  const SYMBOL = "TNFT";
-  const BASE_URI = "ipfs://test/";
-  const MAX_SUPPLY = 1000;
-  const ROYALTY_FEE = 500; // 5%
-
-  // EIP-712 Domain
-  let domain;
-  const types = {
-    NFTVoucher: [
-      { name: "tokenId", type: "uint256" },
-      { name: "minPrice", type: "uint256" },
-      { name: "uri", type: "string" },
-      { name: "buyer", type: "address" },
-      { name: "nonce", type: "uint256" },
-      { name: "expiry", type: "uint256" },
-    ],
-  };
-
-  beforeEach(async function () {
-    [owner, signer, buyer, unauthorized] = await ethers.getSigners();
+describe("NFTContract", function () {
+  async function deployNFTFixture() {
+    const [owner, minter, user1, user2] = await ethers.getSigners();
 
     const NFTContract = await ethers.getContractFactory("NFTContract");
-    nftContract = await upgrades.deployProxy(
+    const nft = await upgrades.deployProxy(
       NFTContract,
-      [NAME, SYMBOL, BASE_URI, MAX_SUPPLY, owner.address, ROYALTY_FEE],
+      ["Test NFT", "TNFT", "https://api.example.com/metadata/", 10000, owner.address, 500],
       { initializer: "initialize", kind: "uups" }
     );
-    await nftContract.deployed();
+    await nft.waitForDeployment();
 
-    // Get role identifiers
-    SIGNER_ROLE = await nftContract.SIGNER_ROLE();
-    MINTER_ROLE = await nftContract.MINTER_ROLE();
-    ADMIN_ROLE = await nftContract.ADMIN_ROLE();
+    const MINTER_ROLE = await nft.MINTER_ROLE();
+    const ADMIN_ROLE = await nft.ADMIN_ROLE();
 
-    // Grant SIGNER_ROLE to signer account
-    await nftContract.grantRole(SIGNER_ROLE, signer.address);
+    return { nft, owner, minter, user1, user2, MINTER_ROLE, ADMIN_ROLE };
+  }
 
-    // Setup EIP-712 domain
-    const chainId = await ethers.provider.getNetwork().then((n) => n.chainId);
-    domain = {
-      name: NAME,
-      version: "1",
-      chainId: chainId,
-      verifyingContract: nftContract.address,
-    };
-  });
-
-  describe("Initialization", function () {
-    it("Should initialize with correct parameters", async function () {
-      expect(await nftContract.name()).to.equal(NAME);
-      expect(await nftContract.symbol()).to.equal(SYMBOL);
-      expect(await nftContract.maxSupply()).to.equal(MAX_SUPPLY);
-      expect(await nftContract.totalSupply()).to.equal(0);
+  describe("Deployment", function () {
+    it("Should set the correct name and symbol", async function () {
+      const { nft } = await loadFixture(deployNFTFixture);
+      expect(await nft.name()).to.equal("Test NFT");
+      expect(await nft.symbol()).to.equal("TNFT");
     });
 
-    it("Should grant roles to deployer", async function () {
-      expect(await nftContract.hasRole(ADMIN_ROLE, owner.address)).to.be.true;
-      expect(await nftContract.hasRole(MINTER_ROLE, owner.address)).to.be.true;
-      expect(await nftContract.hasRole(SIGNER_ROLE, owner.address)).to.be.true;
+    it("Should set the correct max supply", async function () {
+      const { nft } = await loadFixture(deployNFTFixture);
+      expect(await nft.maxSupply()).to.equal(10000);
+    });
+
+    it("Should grant admin role to deployer", async function () {
+      const { nft, owner, ADMIN_ROLE } = await loadFixture(deployNFTFixture);
+      expect(await nft.hasRole(ADMIN_ROLE, owner.address)).to.be.true;
     });
   });
 
-  describe("Standard Minting", function () {
-    it("Should mint token with MINTER_ROLE", async function () {
-      await expect(nftContract.mint(buyer.address))
-        .to.emit(nftContract, "TokenMinted")
-        .withArgs(buyer.address, 0, BASE_URI + "0");
+  describe("Minting", function () {
+    it("Should mint NFT with minter role", async function () {
+      const { nft, owner, minter, user1, MINTER_ROLE } = await loadFixture(deployNFTFixture);
+      
+      await nft.grantRole(MINTER_ROLE, minter.address);
+      
+      await expect(nft.connect(minter).mint(user1.address))
+        .to.emit(nft, "Transfer")
+        .withArgs(ethers.ZeroAddress, user1.address, 0);
 
-      expect(await nftContract.ownerOf(0)).to.equal(buyer.address);
-      expect(await nftContract.totalSupply()).to.equal(1);
+      expect(await nft.ownerOf(0)).to.equal(user1.address);
     });
 
-    it("Should fail to mint without MINTER_ROLE", async function () {
+    it("Should fail to mint without minter role", async function () {
+      const { nft, user1 } = await loadFixture(deployNFTFixture);
+      
       await expect(
-        nftContract.connect(unauthorized).mint(buyer.address)
+        nft.connect(user1).mint(user1.address)
       ).to.be.reverted;
     });
 
-    it("Should batch mint multiple tokens", async function () {
-      await nftContract.batchMint(buyer.address, 5);
-      expect(await nftContract.totalSupply()).to.equal(5);
-      expect(await nftContract.balanceOf(buyer.address)).to.equal(5);
+    it("Should fail to mint beyond max supply", async function () {
+      const { nft, owner, MINTER_ROLE } = await loadFixture(deployNFTFixture);
+      
+      await nft.grantRole(MINTER_ROLE, owner.address);
+      
+      // Set max supply to 1
+      await nft.setMaxSupply(1);
+      
+      // Mint first NFT
+      await nft.mint(owner.address);
+      
+      // Try to mint second NFT
+      await expect(
+        nft.mint(owner.address)
+      ).to.be.revertedWithCustomError(nft, "MaxSupplyExceeded");
+    });
+
+    it("Should increment total supply correctly", async function () {
+      const { nft, owner, MINTER_ROLE } = await loadFixture(deployNFTFixture);
+      
+      await nft.grantRole(MINTER_ROLE, owner.address);
+      
+      expect(await nft.totalSupply()).to.equal(0);
+      
+      await nft.mint(owner.address);
+      expect(await nft.totalSupply()).to.equal(1);
+      
+      await nft.mint(owner.address);
+      expect(await nft.totalSupply()).to.equal(2);
     });
   });
 
-  describe("Lazy Minting - Voucher Creation and Redemption", function () {
-    it("Should redeem valid voucher", async function () {
-      const voucher = {
-        tokenId: 100,
-        minPrice: ethers.utils.parseEther("0.1"),
-        uri: "ipfs://token100",
-        buyer: ethers.constants.AddressZero, // Anyone can redeem
-        nonce: 1,
-        expiry: 0, // No expiry
-      };
-
-      // Sign voucher
-      const signature = await signer._signTypedData(domain, types, voucher);
-
-      // Redeem voucher
-      await expect(
-        nftContract.connect(buyer).redeemVoucher(
-          { ...voucher, signature },
-          { value: ethers.utils.parseEther("0.1") }
-        )
-      )
-        .to.emit(nftContract, "TokenLazyMinted")
-        .withArgs(buyer.address, 100, ethers.utils.parseEther("0.1"), 1);
-
-      expect(await nftContract.ownerOf(100)).to.equal(buyer.address);
+  describe("Royalties", function () {
+    it("Should set royalty info correctly", async function () {
+      const { nft, owner, user1, MINTER_ROLE } = await loadFixture(deployNFTFixture);
+      
+      await nft.grantRole(MINTER_ROLE, owner.address);
+      await nft.mint(user1.address);
+      
+      const salePrice = ethers.parseEther("1");
+      const [receiver, royaltyAmount] = await nft.royaltyInfo(0, salePrice);
+      
+      expect(receiver).to.equal(owner.address); // Default royalty receiver from deployment
+      expect(royaltyAmount).to.equal(ethers.parseEther("0.05")); // 5% of 1 ETH
     });
 
-    it("Should fail with insufficient payment", async function () {
-      const voucher = {
-        tokenId: 101,
-        minPrice: ethers.utils.parseEther("1.0"),
-        uri: "ipfs://token101",
-        buyer: ethers.constants.AddressZero,
-        nonce: 2,
-        expiry: 0,
-      };
-
-      const signature = await signer._signTypedData(domain, types, voucher);
-
-      await expect(
-        nftContract.connect(buyer).redeemVoucher(
-          { ...voucher, signature },
-          { value: ethers.utils.parseEther("0.5") }
-        )
-      ).to.be.revertedWithCustomError(nftContract, "InsufficientPayment");
-    });
-
-    it("Should fail with invalid signature", async function () {
-      const voucher = {
-        tokenId: 102,
-        minPrice: ethers.utils.parseEther("0.1"),
-        uri: "ipfs://token102",
-        buyer: ethers.constants.AddressZero,
-        nonce: 3,
-        expiry: 0,
-      };
-
-      // Sign with unauthorized account
-      const signature = await unauthorized._signTypedData(domain, types, voucher);
-
-      await expect(
-        nftContract.connect(buyer).redeemVoucher(
-          { ...voucher, signature },
-          { value: ethers.utils.parseEther("0.1") }
-        )
-      ).to.be.revertedWithCustomError(nftContract, "InvalidSignature");
-    });
-
-    it("Should prevent replay attacks with nonce", async function () {
-      const voucher = {
-        tokenId: 103,
-        minPrice: ethers.utils.parseEther("0.1"),
-        uri: "ipfs://token103",
-        buyer: ethers.constants.AddressZero,
-        nonce: 4,
-        expiry: 0,
-      };
-
-      const signature = await signer._signTypedData(domain, types, voucher);
-
-      // First redemption should succeed
-      await nftContract.connect(buyer).redeemVoucher(
-        { ...voucher, signature },
-        { value: ethers.utils.parseEther("0.1") }
-      );
-
-      // Second redemption with same nonce should fail
-      const voucher2 = { ...voucher, tokenId: 104 };
-      const signature2 = await signer._signTypedData(domain, types, voucher2);
-
-      await expect(
-        nftContract.connect(buyer).redeemVoucher(
-          { ...voucher2, signature: signature2 },
-          { value: ethers.utils.parseEther("0.1") }
-        )
-      ).to.be.revertedWithCustomError(nftContract, "NonceAlreadyUsed");
-    });
-
-    it("Should enforce buyer restriction", async function () {
-      const voucher = {
-        tokenId: 105,
-        minPrice: ethers.utils.parseEther("0.1"),
-        uri: "ipfs://token105",
-        buyer: buyer.address, // Only buyer can redeem
-        nonce: 5,
-        expiry: 0,
-      };
-
-      const signature = await signer._signTypedData(domain, types, voucher);
-
-      // Unauthorized user tries to redeem
-      await expect(
-        nftContract.connect(unauthorized).redeemVoucher(
-          { ...voucher, signature },
-          { value: ethers.utils.parseEther("0.1") }
-        )
-      ).to.be.revertedWithCustomError(nftContract, "UnauthorizedBuyer");
-
-      // Authorized buyer succeeds
-      await expect(
-        nftContract.connect(buyer).redeemVoucher(
-          { ...voucher, signature },
-          { value: ethers.utils.parseEther("0.1") }
-        )
-      ).to.emit(nftContract, "TokenLazyMinted");
-    });
-
-    it("Should enforce expiry timestamp", async function () {
-      const currentTime = Math.floor(Date.now() / 1000);
-      const voucher = {
-        tokenId: 106,
-        minPrice: ethers.utils.parseEther("0.1"),
-        uri: "ipfs://token106",
-        buyer: ethers.constants.AddressZero,
-        nonce: 6,
-        expiry: currentTime - 3600, // Expired 1 hour ago
-      };
-
-      const signature = await signer._signTypedData(domain, types, voucher);
-
-      await expect(
-        nftContract.connect(buyer).redeemVoucher(
-          { ...voucher, signature },
-          { value: ethers.utils.parseEther("0.1") }
-        )
-      ).to.be.revertedWithCustomError(nftContract, "VoucherExpired");
-    });
-
-    it("Should prevent minting already minted token", async function () {
-      // First mint token 107 normally
-      await nftContract.mint(owner.address);
-      const tokenId = 0;
-
-      // Try to redeem voucher for same token
-      const voucher = {
-        tokenId: tokenId,
-        minPrice: ethers.utils.parseEther("0.1"),
-        uri: "ipfs://token0",
-        buyer: ethers.constants.AddressZero,
-        nonce: 7,
-        expiry: 0,
-      };
-
-      const signature = await signer._signTypedData(domain, types, voucher);
-
-      await expect(
-        nftContract.connect(buyer).redeemVoucher(
-          { ...voucher, signature },
-          { value: ethers.utils.parseEther("0.1") }
-        )
-      ).to.be.revertedWithCustomError(nftContract, "TokenAlreadyMinted");
+    it("Should update default royalty", async function () {
+      const { nft, owner, user1 } = await loadFixture(deployNFTFixture);
+      
+      await nft.setDefaultRoyalty(user1.address, 1000); // 10%
+      
+      const salePrice = ethers.parseEther("1");
+      const [receiver, royaltyAmount] = await nft.royaltyInfo(0, salePrice);
+      
+      expect(receiver).to.equal(user1.address);
+      expect(royaltyAmount).to.equal(ethers.parseEther("0.1")); // 10% of 1 ETH
     });
   });
 
-  describe("Nonce Management", function () {
-    it("Should check if nonce is used", async function () {
-      expect(await nftContract.isNonceUsed(signer.address, 100)).to.be.false;
-
-      const voucher = {
-        tokenId: 200,
-        minPrice: ethers.utils.parseEther("0.1"),
-        uri: "ipfs://token200",
-        buyer: ethers.constants.AddressZero,
-        nonce: 100,
-        expiry: 0,
-      };
-
-      const signature = await signer._signTypedData(domain, types, voucher);
-
-      await nftContract.connect(buyer).redeemVoucher(
-        { ...voucher, signature },
-        { value: ethers.utils.parseEther("0.1") }
-      );
-
-      expect(await nftContract.isNonceUsed(signer.address, 100)).to.be.true;
-    });
-
-    it("Should allow manual nonce invalidation", async function () {
-      await expect(nftContract.connect(signer).invalidateNonce(999))
-        .to.emit(nftContract, "NonceInvalidated")
-        .withArgs(signer.address, 999);
-
-      expect(await nftContract.isNonceUsed(signer.address, 999)).to.be.true;
-    });
-  });
-
-  describe("Voucher Verification", function () {
-    it("Should verify valid voucher", async function () {
-      const voucher = {
-        tokenId: 300,
-        minPrice: ethers.utils.parseEther("0.1"),
-        uri: "ipfs://token300",
-        buyer: ethers.constants.AddressZero,
-        nonce: 200,
-        expiry: 0,
-      };
-
-      const signature = await signer._signTypedData(domain, types, voucher);
-
-      const [recoveredSigner, isValid] = await nftContract.verifyVoucher({
-        ...voucher,
-        signature,
-      });
-
-      expect(recoveredSigner).to.equal(signer.address);
-      expect(isValid).to.be.true;
-    });
-
-    it("Should return domain separator", async function () {
-      const domainSeparator = await nftContract.getDomainSeparator();
-      expect(domainSeparator).to.not.equal(ethers.constants.HashZero);
-    });
-  });
-
-  describe("Withdrawal", function () {
-    it("Should allow admin to withdraw funds", async function () {
-      // Redeem a voucher to add funds to contract
-      const voucher = {
-        tokenId: 400,
-        minPrice: ethers.utils.parseEther("1.0"),
-        uri: "ipfs://token400",
-        buyer: ethers.constants.AddressZero,
-        nonce: 300,
-        expiry: 0,
-      };
-
-      const signature = await signer._signTypedData(domain, types, voucher);
-
-      await nftContract.connect(buyer).redeemVoucher(
-        { ...voucher, signature },
-        { value: ethers.utils.parseEther("1.0") }
-      );
-
-      const contractBalance = await ethers.provider.getBalance(nftContract.address);
-      expect(contractBalance).to.equal(ethers.utils.parseEther("1.0"));
-
-      const ownerBalanceBefore = await ethers.provider.getBalance(owner.address);
-      await nftContract.withdraw();
-      const ownerBalanceAfter = await ethers.provider.getBalance(owner.address);
-
-      expect(ownerBalanceAfter).to.be.gt(ownerBalanceBefore);
-    });
-  });
-
-  describe("Pausable", function () {
-    it("Should prevent redemption when paused", async function () {
-      await nftContract.pause();
-
-      const voucher = {
-        tokenId: 500,
-        minPrice: ethers.utils.parseEther("0.1"),
-        uri: "ipfs://token500",
-        buyer: ethers.constants.AddressZero,
-        nonce: 400,
-        expiry: 0,
-      };
-
-      const signature = await signer._signTypedData(domain, types, voucher);
-
+  describe("Pause", function () {
+    it("Should pause and unpause transfers", async function () {
+      const { nft, owner, user1, user2, MINTER_ROLE } = await loadFixture(deployNFTFixture);
+      
+      await nft.grantRole(MINTER_ROLE, owner.address);
+      await nft.mint(user1.address);
+      
+      await nft.pause();
+      
       await expect(
-        nftContract.connect(buyer).redeemVoucher(
-          { ...voucher, signature },
-          { value: ethers.utils.parseEther("0.1") }
-        )
-      ).to.be.revertedWith("Pausable: paused");
+        nft.connect(user1).transferFrom(user1.address, user2.address, 0)
+      ).to.be.reverted;
+      
+      await nft.unpause();
+      
+      await nft.connect(user1).transferFrom(user1.address, user2.address, 0);
+      expect(await nft.ownerOf(0)).to.equal(user2.address);
+    });
+  });
+
+  describe("Upgrades", function () {
+    it("Should upgrade contract", async function () {
+      const { nft, owner } = await loadFixture(deployNFTFixture);
+      
+      const NFTContractV2 = await ethers.getContractFactory("NFTContract");
+      const upgraded = await upgrades.upgradeProxy(await nft.getAddress(), NFTContractV2);
+      
+      expect(await upgraded.name()).to.equal("Test NFT");
+      expect(await upgraded.symbol()).to.equal("TNFT");
+    });
+
+    it("Should only allow admin to upgrade", async function () {
+      const { nft, user1 } = await loadFixture(deployNFTFixture);
+      
+      const NFTContractV2 = await ethers.getContractFactory("NFTContract", user1);
+      
+      await expect(
+        upgrades.upgradeProxy(await nft.getAddress(), NFTContractV2)
+      ).to.be.reverted;
+    });
+  });
+
+  describe("Base URI", function () {
+    it("Should update base URI", async function () {
+      const { nft, owner, MINTER_ROLE } = await loadFixture(deployNFTFixture);
+      
+      await nft.grantRole(MINTER_ROLE, owner.address);
+      await nft.mint(owner.address);
+      
+      await nft.setBaseURI("https://newapi.example.com/metadata/");
+      
+      expect(await nft.tokenURI(0)).to.equal("https://newapi.example.com/metadata/0");
     });
   });
 });

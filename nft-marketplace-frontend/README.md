@@ -1,6 +1,6 @@
-# NFT Marketplace Frontend
+# SecureNFT Hub Frontend
 
-Production-ready Next.js frontend for the NFT marketplace ecosystem with AI-powered features.
+Production-ready Next.js frontend for the SecureNFT Hub ecosystem with AI-powered features.
 
 ## Features
 
@@ -368,4 +368,4 @@ For issues and questions:
 
 **Built with Next.js, Wagmi, and TailwindCSS**
 
-Production-ready NFT marketplace frontend with AI-powered features.
+Production-ready SecureNFT Hub frontend with AI-powered features.

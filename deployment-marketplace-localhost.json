@@ -1,8 +1,8 @@
 {
   "network": "localhost",
   "marketplace": {
-    "proxy": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
-    "implementation": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+    "proxy": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    "implementation": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
     "admin": "0x0000000000000000000000000000000000000000"
   },
   "config": {
@@ -10,5 +10,5 @@
     "feeRecipient": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
   },
   "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "timestamp": "2026-02-27T11:05:35.437Z"
+  "timestamp": "2026-03-01T16:52:54.988Z"
 }

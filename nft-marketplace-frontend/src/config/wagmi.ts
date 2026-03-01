@@ -23,10 +23,12 @@ const localhost = defineChain({
 export const config = createConfig({
   chains: [localhost, mainnet, sepolia],
   connectors: [
-    injected(),
+    injected({
+      target: 'metaMask',
+    }),
     // Only include WalletConnect if projectId is provided
     ...(projectId ? [walletConnect({ projectId, showQrModal: true })] : []),
-    coinbaseWallet({ appName: 'NFT Marketplace' }),
+    coinbaseWallet({ appName: 'SecureNFT Hub' }),
   ],
   transports: {
     [localhost.id]: http('http://127.0.0.1:8545'),

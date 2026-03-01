@@ -1,49 +1,72 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createPublicClient, http } from 'viem';
 import { hardhat } from 'viem/chains';
-import { NFT_CONTRACT_ABI } from '@/config/contracts';
+import { NFT_CONTRACT_ADDRESS, NFT_CONTRACT_ABI } from '@/config/contracts';
 
-const client = createPublicClient({
+const publicClient = createPublicClient({
   chain: hardhat,
   transport: http('http://127.0.0.1:8545'),
 });
 
-const NFT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS as `0x${string}`;
-
 export async function GET(
-  _request: Request,
-  context: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   try {
-    const params = await context.params;
-    const tokenId = params.id;
+    const tokenId = BigInt(params.id);
 
-    // @ts-ignore - viem type issue with authorizationList
-    const owner = await client.readContract({
+    // Get token owner
+    const owner = await publicClient.readContract({
       address: NFT_CONTRACT_ADDRESS,
       abi: NFT_CONTRACT_ABI,
       functionName: 'ownerOf',
-      args: [BigInt(tokenId)],
+      args: [tokenId],
     });
 
-    // @ts-ignore - viem type issue with authorizationList
-    const tokenURI = await client.readContract({
+    // Get token URI
+    const tokenURI = await publicClient.readContract({
       address: NFT_CONTRACT_ADDRESS,
       abi: NFT_CONTRACT_ABI,
       functionName: 'tokenURI',
-      args: [BigInt(tokenId)],
+      args: [tokenId],
     }) as string;
 
-    // Parse metadata if it's a data URI
+    // Parse metadata from token URI
     let metadata = null;
-    if (tokenURI.startsWith('data:application/json')) {
-      const base64Data = tokenURI.split(',')[1];
-      const jsonString = Buffer.from(base64Data, 'base64').toString();
-      metadata = JSON.parse(jsonString);
+    
+    // First try to fetch from our metadata storage
+    try {
+      const metadataResponse = await fetch(`http://localhost:3000/api/metadata/${params.id}`);
+      if (metadataResponse.ok) {
+        metadata = await metadataResponse.json();
+      }
+    } catch (err) {
+      console.log('No metadata in storage, trying tokenURI');
+    }
+    
+    // If not in storage, try tokenURI
+    if (!metadata && tokenURI) {
+      try {
+        // Handle data URI
+        if (tokenURI.startsWith('data:application/json;base64,')) {
+          const base64Data = tokenURI.replace('data:application/json;base64,', '');
+          const jsonString = Buffer.from(base64Data, 'base64').toString('utf-8');
+          metadata = JSON.parse(jsonString);
+        } else if (tokenURI.startsWith('data:application/json,')) {
+          const jsonString = tokenURI.replace('data:application/json,', '');
+          metadata = JSON.parse(decodeURIComponent(jsonString));
+        } else if (tokenURI.startsWith('http')) {
+          // Fetch from HTTP URL
+          const response = await fetch(tokenURI);
+          metadata = await response.json();
+        }
+      } catch (error) {
+        console.error('Error parsing metadata:', error);
+      }
     }
 
     return NextResponse.json({
-      tokenId,
+      tokenId: tokenId.toString(),
       owner,
       tokenURI,
       metadata,

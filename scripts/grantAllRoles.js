@@ -10,12 +10,12 @@ async function main() {
   const MINTER_ROLE = await NFT.MINTER_ROLE();
   
   console.log("Granting ADMIN_ROLE to:", grantTo);
-  const tx1 = await NFT.grantRole(ADMIN_ROLE, grantTo);
+  const tx1 = await NFT.grantRole(ADMIN_ROLE, grantTo, { gasLimit: 15000000 });
   await tx1.wait();
   console.log("✅ ADMIN_ROLE granted!");
   
   console.log("\nGranting MINTER_ROLE to:", grantTo);
-  const tx2 = await NFT.grantRole(MINTER_ROLE, grantTo);
+  const tx2 = await NFT.grantRole(MINTER_ROLE, grantTo, { gasLimit: 15000000 });
   await tx2.wait();
   console.log("✅ MINTER_ROLE granted!");
   

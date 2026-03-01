@@ -293,8 +293,28 @@ export default function NFTDetailPage() {
                   </button>
                 </div>
               ) : (
-                <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl mb-6 text-center">
-                  <p className="text-gray-600 dark:text-gray-400">Not listed for sale</p>
+                <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl mb-6">
+                  <p className="text-gray-600 dark:text-gray-400 text-center mb-4">Not listed for sale</p>
+                  
+                  {/* Show listing options if user owns the NFT */}
+                  {address && owner && (address.toLowerCase() === (owner as string).toLowerCase()) && (
+                    <div className="space-y-3">
+                      <a
+                        href={`/marketplace/list/${tokenId}`}
+                        className="btn-primary w-full flex items-center justify-center"
+                      >
+                        <Tag className="w-5 h-5 mr-2" />
+                        List for Sale
+                      </a>
+                      <a
+                        href={`/marketplace/auction/${tokenId}`}
+                        className="btn-secondary w-full flex items-center justify-center"
+                      >
+                        <Clock className="w-5 h-5 mr-2" />
+                        Create Auction
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
 
